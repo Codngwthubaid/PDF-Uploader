@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
-import { OpenAIEmbeddings } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant"
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { CohereEmbeddings } from '@langchain/cohere';
 import dotenv from "dotenv"
 
 dotenv.config()
@@ -15,18 +15,13 @@ const myWorker = new Worker('file-upload-queue', async (job) => {
     const docs = await loader.load();
     console.log("Docs:", docs)
 
-    const embeddings = new OpenAIEmbeddings({
-      apiKey: process.env.OPENAI_API_KEY,
-      model: "text-embedding-3-large"
+    const embeddings = new CohereEmbeddings({
+      model: "embed-english-v3.0"
     });
-    console.log("OpenAI API Key:", process.env.OPENAI_API_KEY)
-    console.log("Qdrant URL:", process.env.QDRANT_URL)
-
     const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
       url: process.env.QDRANT_URL,
       collectionName: "langchainjs-testing",
     });
-    console.log("Vector Store:", vectorStore)
 
     await vectorStore.addDocuments(docs);
     console.log("File uploaded and indexed successfully.")
