@@ -18,6 +18,8 @@ const myWorker = new Worker('file-upload-queue', async (job) => {
     const embeddings = new CohereEmbeddings({
       model: "embed-english-v3.0"
     });
+
+    
     const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
       url: process.env.QDRANT_URL,
       collectionName: "langchainjs-testing",

@@ -3,8 +3,15 @@ import cors from 'cors';
 import multer from 'multer';
 import { Queue } from 'bullmq';
 import dotenv from 'dotenv';
+import { QdrantVectorStore } from '@langchain/qdrant';
+import { CohereEmbeddings } from '@langchain/cohere';
+import { CohereClient } from 'cohere-ai';
 
 dotenv.config()
+
+const cohere = new CohereClient({
+    token: process.env.COHERE_API_KEY,
+});
 
 const myQueue = new Queue('file-upload-queue', {
     connection: {
@@ -44,8 +51,43 @@ app.post('/upload/pdf', upload.single('pdf'), async (req, res) => {
     res.send(`File uploaded successfully: ${req.file.originalname}`);
 });
 
+
+app.get("/chat", async (req, res) => {
+    const userQuery = "What are Model GST Law ?"
+    const embeddings = new CohereEmbeddings({
+        model: "embed-english-v3.0"
+    });
+
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
+        url: process.env.QDRANT_URL,
+        collectionName: "langchainjs-testing",
+    });
+
+    const retriever = vectorStore.asRetriever({
+        k: 2,
+    });
+    const result = await retriever.invoke(userQuery);
+    const SYSTEM_PROMPT = `You are a helpful assistant. You will be provided with a question and some context. Your task is to answer the question based on the context provided. Context: ${JSON.stringify(result)}`
+
+
+    const response = await cohere.chat({
+        model: "command-a-03-2025",
+        message: userQuery, 
+        system_prompt: SYSTEM_PROMPT, 
+    });
+
+    const chatResponse = response.text;
+    console.log(chatResponse)
+
+
+    return res.json({ chatResponse });
+})
+
+
+
+
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log("message");
 });
 
