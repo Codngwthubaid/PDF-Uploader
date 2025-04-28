@@ -53,7 +53,7 @@ app.post('/upload/pdf', upload.single('pdf'), async (req, res) => {
 
 
 app.get("/chat", async (req, res) => {
-    const userQuery = "Tell me the important events of Ali's Caliphate in brief ?"
+    const userQuery = req.query.message;
     const embeddings = new CohereEmbeddings({
         model: "embed-english-v3.0"
     });
@@ -80,7 +80,7 @@ app.get("/chat", async (req, res) => {
     console.log(chatResponse)
 
 
-    return res.json({ chatResponse });
+    return res.json({ message : chatResponse , doc : result });
 })
 
 

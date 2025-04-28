@@ -13,6 +13,8 @@ export function UploadFile() {
             await axios.post("http://localhost:5000/upload/pdf", formData, {
                 headers: {
                     "Content-Type": "application/pdf",
+                    "Accept": "application/json",
+                    "Access-Control-Allow-Origin": "*",
                 },
             })
             console.log("File uploaded successfully")
