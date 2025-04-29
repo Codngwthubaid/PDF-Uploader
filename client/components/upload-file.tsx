@@ -24,7 +24,7 @@ export function UploadFile() {
 
     return (
         <div className="w-[80%]">
-            <Input type="file" onChange={handleFileChange} />
+            <Input type="file" className="cursor-pointer" onChange={handleFileChange} />
         </div>
     )
 }
