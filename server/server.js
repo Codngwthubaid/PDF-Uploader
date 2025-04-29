@@ -80,11 +80,8 @@ app.get("/chat", async (req, res) => {
     console.log(chatResponse)
 
 
-    return res.json({ message : chatResponse , doc : result });
+    return res.json({ message: chatResponse, doc: result });
 })
-
-
-
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => { console.log(`Server running at port : http://localhost:${port}`) });
