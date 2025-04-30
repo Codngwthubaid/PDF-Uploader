@@ -28,10 +28,18 @@ export default function ChatPortion() {
     const [message, setMessage] = useState<string>("");
     const [messages, setMessages] = useState<IMessage[]>([]);
     const [uploaded, setUploaded] = useState<boolean>(false);
+    const [fileError, setFileError] = useState<string>("");
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
+
         if (file) {
+            if (file.type !== "application/pdf") {
+                setFileError("Only PDF files are allowed.");
+                return;
+            }
+
+            setFileError("");
             const formData = new FormData();
             formData.append("pdf", file);
             setUploaded(true);
@@ -53,7 +61,6 @@ export default function ChatPortion() {
             }
         }
     };
-
 
     const handleSendChatMessage = async () => {
         if (!message.trim()) return;
@@ -86,6 +93,11 @@ export default function ChatPortion() {
                 <div className="flex justify-center items-center my-4">
                     <Loader className="w-8 h-8 mr-2 animate-spin" />
                     <span className="ml-2 text-sm text-gray-500">Uploading...</span>
+                </div>
+            )}
+            {fileError && (
+                <div className="text-red-600 text-sm text-center mt-2">
+                    {fileError}
                 </div>
             )}
             {messages.map((message, index) => (
