@@ -17,7 +17,6 @@ const redisUrl = process.env.REDIS_URL;
 if (!redisUrl) throw new Error('REDIS_URL is not defined');
 
 const url = new URL(redisUrl);
-console.log(url)
 
 const myQueue = new Queue('file-upload-queue', {
     connection: {
@@ -27,7 +26,6 @@ const myQueue = new Queue('file-upload-queue', {
         tls: url.protocol === 'rediss:' ? {} : undefined,
     },
 });
-console.log(myQueue)
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {

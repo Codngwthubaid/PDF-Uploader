@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { UserButton } from "@clerk/nextjs";
-import { Upload, Bot } from "lucide-react";
+import { Upload, Brain, Loader } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import axios from "axios";
 
@@ -34,6 +34,7 @@ export default function ChatPortion() {
         if (file) {
             const formData = new FormData();
             formData.append("pdf", file);
+            setUploaded(true);
 
             try {
                 await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/upload/pdf`, formData, {
@@ -47,9 +48,12 @@ export default function ChatPortion() {
                 setMessages((prev) => [{ role: "pdf", content: `${file?.name} uploaded successfully` }, ...prev]);
             } catch (error) {
                 console.error("File upload error:", error);
+            } finally {
+                setUploaded(false);
             }
         }
     };
+
 
     const handleSendChatMessage = async () => {
         if (!message.trim()) return;
@@ -79,8 +83,9 @@ export default function ChatPortion() {
     return (
         <div className="p-4 pb-36 max-w-screen-xl mx-auto">
             {uploaded && (
-                <div className="text-green-600 font-medium text-center mb-4">
-                    File uploaded successfully!
+                <div className="flex justify-center items-center my-4">
+                    <Loader className="w-8 h-8 mr-2 animate-spin" />
+                    <span className="ml-2 text-sm text-gray-500">Uploading...</span>
                 </div>
             )}
             {messages.map((message, index) => (
@@ -88,19 +93,15 @@ export default function ChatPortion() {
                     key={index}
                     className={`flex gap-x-4 my-2 ${message.role === "assistant" ? "justify-start" : "justify-end"} flex-wrap`}
                 >
-                    <div className="flex-shrink-0 flex flex-col items-center">
+                    <div className="flex-shrink-0 flex items-center">
                         {message.role === "user" && <UserButton />}
-                        {message.role === "assistant" && <Bot />}
-                        {message.role === "loading" && (
-                            <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-                        )}
-                        {message.role === "pdf" && (
-                            <div className="text-blue-500 font-semibold text-sm">📄 PDF Uploaded</div>
-                        )}
+                        {message.role === "assistant" && <Brain className="size-10 ml-3 bg-gradient-to-r from-blue-950 to-gray-300 border border-gray-700 p-1 rounded-full text-" />}
+                        {message.role === "loading" && (<Loader className="w-8 h-8 mr-2 animate-spin" />)}
+                        {message.role === "pdf" && (<div className="text-blue-500 font-semibold text-sm">📄 PDF Uploaded</div>)}
                     </div>
 
                     <div
-                        className={`w-full sm:w-[80%] md:w-[70%] lg:w-[60%] border border-gray-700 p-3 rounded-md ${message.role === "assistant" ? "max-h-80 overflow-y-auto" : ""
+                        className={`w-full sm:w-fit p-3 rounded-md ${message.role === "assistant" ? "h-fit overflow-y-auto" : ""
                             }`}
                     >
                         <ReactMarkdown>{message.content || ""}</ReactMarkdown>
@@ -112,22 +113,24 @@ export default function ChatPortion() {
 
             <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-gray-900 p-4 shadow-md z-10">
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-screen-lg mx-auto">
-                    <label htmlFor="file" className="cursor-pointer">
-                        <Upload className="size-9 p-2 rounded-md border border-gray-400 text-gray-500" />
-                    </label>
-                    <Input type="file" id="file" className="hidden" onChange={handleFileChange} />
+                    <div className="flex items-center gap-3 w-full">
+                        <label htmlFor="file" className="cursor-pointer">
+                            <Upload className="size-9 p-2 rounded-md border border-gray-400 text-gray-500" />
+                        </label>
+                        <Input type="file" id="file" className="hidden" onChange={handleFileChange} />
 
-                    <Input
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Type your message here"
-                        className="flex-1 w-full"
-                    />
+                        <Input
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder="Type your message here"
+                            className="flex-1 w-full"
+                        />
 
+                    </div>
                     <Button
                         onClick={handleSendChatMessage}
                         disabled={!message.trim()}
-                        className="w-full sm:w-auto"
+                        className="w-full sm:w-auto cursor-pointer"
                     >
                         Send
                     </Button>
