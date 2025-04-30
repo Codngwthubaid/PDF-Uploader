@@ -12,12 +12,6 @@ dotenv.config()
 
 const cohere = new CohereClient({ token: process.env.COHERE_API_KEY });
 
-// const myQueue = new Queue('file-upload-queue', {
-//     connection: {
-//         host: 'localhost',
-//         port: 6379,
-//     }
-// });
 
 const redisUrl = process.env.REDIS_URL;
 if (!redisUrl) throw new Error('REDIS_URL is not defined');
