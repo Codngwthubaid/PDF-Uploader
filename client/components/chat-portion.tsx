@@ -78,6 +78,11 @@ export default function ChatPortion() {
 
     return (
         <div className="p-4 pb-36 max-w-screen-xl mx-auto">
+            {uploaded && (
+                <div className="text-green-600 font-medium text-center mb-4">
+                    File uploaded successfully!
+                </div>
+            )}
             {messages.map((message, index) => (
                 <div
                     key={index}
