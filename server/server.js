@@ -1,24 +1,39 @@
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import { Queue } from 'bullmq';
 import dotenv from 'dotenv';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { CohereEmbeddings } from '@langchain/cohere';
 import { CohereClient } from 'cohere-ai';
+import { Queue } from 'bullmq';
 
 dotenv.config()
 
-const cohere = new CohereClient({
-    token: process.env.COHERE_API_KEY,
-});
+
+const cohere = new CohereClient({ token: process.env.COHERE_API_KEY });
+
+// const myQueue = new Queue('file-upload-queue', {
+//     connection: {
+//         host: 'localhost',
+//         port: 6379,
+//     }
+// });
+
+const redisUrl = process.env.REDIS_URL;
+if (!redisUrl) throw new Error('REDIS_URL is not defined');
+
+const url = new URL(redisUrl);
+console.log(url)
 
 const myQueue = new Queue('file-upload-queue', {
     connection: {
-        host: 'localhost',
-        port: 6379,
-    }
+        host: url.hostname,
+        port: Number(url.port),
+        password: url.password,
+        tls: url.protocol === 'rediss:' ? {} : undefined,
+    },
 });
+console.log(myQueue)
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -67,6 +82,7 @@ app.get("/chat", async (req, res) => {
         k: 2,
     });
     const result = await retriever.invoke(userQuery);
+    
     const SYSTEM_PROMPT = `You are an advanced, precision-driven assistant tasked with providing authoritative, contextually grounded responses. For every interaction, you will be presented with a question and a curated body of context. Your objective is to deliver a clear, accurate, and logically structured answer derived exclusively from the provided context, without incorporating external information, assumptions, or speculation. Maintain a consistently professional, articulate, and concise tone, ensuring your responses reflect critical understanding, relevance, and the highest standards of quality. Context: ${JSON.stringify(result)}`
 
 
@@ -83,6 +99,6 @@ app.get("/chat", async (req, res) => {
     return res.json({ message: chatResponse, doc: result });
 })
 
-const port = process.env.PORT || 5000;
-app.listen(port, () => { console.log(`Server running at port : http://localhost:${port}`) });
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => { console.log(`Server running at port : http://localhost:${PORT}`) });
 

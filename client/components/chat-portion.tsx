@@ -36,7 +36,7 @@ export default function ChatPortion() {
             formData.append("pdf", file);
 
             try {
-                await axios.post("http://localhost:5000/upload/pdf", formData, {
+                await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/upload/pdf`, formData, {
                     headers: {
                         "Content-Type": "application/pdf",
                         "Accept": "application/json",
@@ -58,7 +58,7 @@ export default function ChatPortion() {
         setMessages((prev) => [...prev, { role: "loading", content: "Thinking..." }]);
 
         try {
-            const response = await axios.get(`http://localhost:5000/chat?message=${message}`);
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat?message=${message}`);
             const data = await response.data;
 
             setMessages((prev) => [
